@@ -1,61 +1,68 @@
 import 'package:flutter/material.dart';
+import 'package:covid_status/widgets/mini_container.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class StatusScreen extends StatelessWidget {
+class StatusScreen extends StatefulWidget {
+  @override
+  _StatusScreenState createState() => _StatusScreenState();
+}
+
+class _StatusScreenState extends State<StatusScreen> {
+
+  int total;
+  int discharged;
+  int deaths;
+
+  void data() async{
+    http.Response response = await http.get('https://api.rootnet.in/covid19-in/stats/latest');
+    if(response.statusCode == 200){
+      var data = jsonDecode(response.body);
+      setState(() {
+        total = data['data']['summary']['total'];
+        discharged = data['data']['summary']['discharged'];
+        deaths = data['data']['summary']['deaths'];
+      });
+    }
+    else{
+      print(response.statusCode);
+    }
+  }
+
+  @override
+  void initState() {
+    data();
+    super.initState();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('COVID STATUS'),
+        title: Center(child: Text('COVID STATUS')),
       ),
       body: Column(
         children: [
-          Container(
-            margin: EdgeInsets.all(20.0),
-            padding: EdgeInsets.all(30.0),
-            decoration: BoxDecoration(
-              color: Colors.purpleAccent,
-              borderRadius: BorderRadius.circular(40.0)
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Text('Total'),
-                Text('2999')
-              ],
-            ),
+          MiniContainer(
+            color: Colors.purpleAccent,
+            label: 'Total',
+            count: '$total',
           ),
-          Container(
-            margin: EdgeInsets.all(20.0),
-            padding: EdgeInsets.all(30.0),
-            decoration: BoxDecoration(
-                color: Colors.redAccent,
-                borderRadius: BorderRadius.circular(40.0)
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Text('Deaths'),
-                Text('2999')
-              ],
-            ),
+          MiniContainer(
+            color: Colors.redAccent,
+            label: 'Deaths',
+            count: '$deaths',
           ),
-          Container(
-            margin: EdgeInsets.all(20.0),
-            padding: EdgeInsets.all(30.0),
-            decoration: BoxDecoration(
-                color: Colors.lightGreenAccent,
-                borderRadius: BorderRadius.circular(40.0)
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Text('Discharged Patients'),
-                Text('2999')
-              ],
-            ),
+          MiniContainer(
+            color: Colors.lightGreenAccent,
+            label: 'Discharged Patients',
+            count: '$discharged',
           ),
         ],
       ),
     );
   }
 }
+
+
